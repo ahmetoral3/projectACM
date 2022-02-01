@@ -6,8 +6,8 @@ const char* password =  "Ailecek03@-nl";
 String message;
 String message1;
 
-const int motorpinLeft1 =34;
-const int motorpinLeft2 =34;
+const int motorpinLeft1 =25;
+const int motorpinLeft2 =26;
 const int motorpinRight1 =32;
 const int motorpinRight2 =33;
 const int ledVerbinding = 0;
@@ -20,6 +20,7 @@ void setup() {
  
   while (WiFi.status() != WL_CONNECTED) {
     delay(1000);
+    message = "0";
     Serial.println("Connecting to WiFi..");
   }
   Serial.println("Connected to the WiFi network");
@@ -31,6 +32,32 @@ void setup() {
   pinMode(ledVerbinding, OUTPUT);
 }
  
+  void vooruit(){
+    digitalWrite(motorpinLeft1,HIGH);
+    digitalWrite(motorpinLeft2,LOW);
+    digitalWrite(motorpinRight1,LOW);
+    digitalWrite(motorpinRight2,HIGH);
+  }
+  void achteruit(){
+    digitalWrite(motorpinLeft1,LOW);
+    digitalWrite(motorpinLeft2,HIGH);
+    digitalWrite(motorpinRight1,HIGH);
+    digitalWrite(motorpinRight2,LOW);
+  }
+
+  void links(){
+    digitalWrite(motorpinLeft1,LOW);
+    digitalWrite(motorpinLeft2,HIGH);
+    digitalWrite(motorpinRight1,LOW);
+    digitalWrite(motorpinRight2,HIGH);
+  }
+
+  void rechts(){
+    digitalWrite(motorpinLeft1,HIGH);
+    digitalWrite(motorpinLeft2,LOW);
+    digitalWrite(motorpinRight1,HIGH);
+    digitalWrite(motorpinRight2,LOW);
+  }
  
 void loop() {
  
@@ -74,31 +101,24 @@ HTTPClient http1;
  http1.end();
 
   if (message1 == "1"){
-    /*digitalWrite(motorpinLeft1,HIGH);
-    digitalWrite(motorpinLeft2,LOW);
-    digitalWrite(motorpinRight1,LOW);
-    digitalWrite(motorpinRight2,HIGH);*/
+    vooruit();
     Serial.println("voor");
   }
-  if (message1 == "2"){
-    /*digitalWrite(motorpinLeft1,LOW);
-    digitalWrite(motorpinLeft2,HIGH);
-    digitalWrite(motorpinRight1,HIGH);
-    digitalWrite(motorpinRight2,LOW);*/
+  else if (message1 == "2"){
+    achteruit();
     Serial.println("achter");
   }
-  if (message1 == "4"){
-    /*digitalWrite(motorpinLeft1,HIGH);
-    digitalWrite(motorpinLeft2,LOW);
-    digitalWrite(motorpinRight1,HIGH);
-    digitalWrite(motorpinRight2,LOW);*/
+  else if (message1 == "4"){
+    rechts();
     Serial.println("rechts");
   }
-  if (message1 == "8"){
-    /*digitalWrite(motorpinLeft1,LOW);
-    digitalWrite(motorpinLeft2,HIGH);
-    digitalWrite(motorpinRight1,LOW);
-    digitalWrite(motorpinRight2,HIGH);*/
+  else if (message1 == "8"){
+    links();
     Serial.println("links");
+  }else{
+    digitalWrite(motorpinLeft1,LOW);
+    digitalWrite(motorpinLeft2,LOW);
+    digitalWrite(motorpinRight1,LOW);
+    digitalWrite(motorpinRight2,LOW);
   }
 }
