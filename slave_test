@@ -1,8 +1,8 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
  
-const char* ssid = "Ziggo0957612";
-const char* password =  "Ailecek03@-nl";
+const char* ssid = "Tesla Iot";
+const char* password =  "fsL6HgjN";
 String message;
 String message1;
 
