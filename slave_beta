@@ -1,0 +1,263 @@
+#include <WiFi.h>
+#include <HTTPClient.h>
+#define normaal 1
+#define wifi 0
+ 
+const char* ssid = "Tesla Iot";
+const char* password =  "fsL6HgjN";
+String message;
+String message1;
+int staat;
+int con = 0;
+HTTPClient http;
+HTTPClient http1;
+
+int reed_switch = 21;
+int reed1 = 18;
+int reed2 = 19;
+int reed3 = 13;
+int reed_status;
+
+const int trigPin = 22;
+const int echoPin = 23;
+
+const int trigPinRechts = 16;
+const int echoPinRechts = 17;
+
+const int trigPinBeneden = 14;
+const int echoPinbeneden = 12;
+
+#define sound speed in cm/uS
+#define SOUND_SPEED 0.034
+
+long duration;
+long duration1;
+long duration2;
+float distanceCm;
+float distanceCm1;
+float distanceCm2;
+
+int irLinks = 15;
+int irRechts = 4 ;
+
+
+const int motorpinLeft1 =25;
+const int motorpinLeft2 =26;
+const int motorpinRight1 =32;
+const int motorpinRight2 =33;
+const int ledVerbinding = 2;
+const int switchButton = 5;
+
+ 
+void setup() {
+ 
+  Serial.begin(9600);
+ 
+  WiFi.begin(ssid, password);
+ 
+  while (WiFi.status() != WL_CONNECTED) {
+    message1 = "0";
+    delay(1000);
+    Serial.println("Connecting to WiFi..");
+  }
+  Serial.println("Connected to the WiFi network");
+
+  pinMode(motorpinLeft1,OUTPUT);// Sets the motorpinleft1 as an output
+  pinMode(motorpinLeft2,OUTPUT);// Sets the motorpinleft2 as an output
+  pinMode(motorpinRight1,OUTPUT);// Sets the motorpinright1 as an output
+  pinMode(motorpinRight2,OUTPUT);// Sets the motorpinright2 as an output
+  pinMode(ledVerbinding, OUTPUT);// Sets led pin as an output
+  pinMode(switchButton, INPUT);// Sets the switch button as an output
+  //reed
+    pinMode(reed_switch, INPUT);
+    //ultrasoon
+    pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+    pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+    pinMode(trigPinRechts, OUTPUT);// Sets the trigPinRechts as an Output
+    pinMode(echoPinRechts,INPUT);// Sets the echoPinbeneden as an Input
+    pinMode(trigPinBeneden,OUTPUT);// Sets the trigPinBeneden as an Output
+    pinMode(echoPinbeneden,INPUT);// Sets the echoPinbeneden as an Input
+    
+    
+    //ir-sensor
+    pinMode(irLinks,INPUT);
+    pinMode(irRechts,INPUT);
+    WiFi.begin(ssid, password);
+}
+
+  void vooruit(){
+    digitalWrite(motorpinLeft1,HIGH);
+    digitalWrite(motorpinLeft2,LOW);
+    digitalWrite(motorpinRight1,LOW);
+    digitalWrite(motorpinRight2,HIGH);
+  }
+  void achteruit(){
+    digitalWrite(motorpinLeft1,LOW);
+    digitalWrite(motorpinLeft2,HIGH);
+    digitalWrite(motorpinRight1,HIGH);
+    digitalWrite(motorpinRight2,LOW);
+  }
+
+  void links(){
+    digitalWrite(motorpinLeft1,LOW);
+    digitalWrite(motorpinLeft2,HIGH);
+    digitalWrite(motorpinRight1,LOW);
+    digitalWrite(motorpinRight2,HIGH);
+  }
+
+  void rechts(){
+    digitalWrite(motorpinLeft1,HIGH);
+    digitalWrite(motorpinLeft2,LOW);
+    digitalWrite(motorpinRight1,HIGH);
+    digitalWrite(motorpinRight2,LOW);
+  }
+ 
+ 
+void loop() {
+  if(digitalRead(switchButton) == HIGH){
+    staat = wifi;
+  }
+  if(digitalRead(switchButton) == LOW){
+    staat = normaal;
+  }
+
+switch(staat){ 
+  
+  case wifi:{
+  while (con == 0){
+
+  http.begin("http://192.168.178.214/test");
+  int httpCode = http.GET();
+ 
+  if (httpCode > 0) {
+     
+    String payload = http.getString();
+    message = payload;
+    Serial.println(httpCode);
+    Serial.println(payload);
+    delay(500);
+    digitalWrite(ledVerbinding,HIGH);
+  }
+ 
+  else {
+    Serial.println("Error on HTTP request");
+  }
+  con = 1;
+ http.end();
+  }
+  HTTPClient http1;
+
+  http1.begin("http://192.168.178.214/motor");
+  int httpCode1 = http1.GET();
+ 
+  if (httpCode1 > 0) {
+     
+    String payload = http1.getString();
+    message1 = payload;
+    Serial.println(httpCode1);
+    Serial.println(payload);
+  }
+ 
+  else {
+    Serial.println("Error on HTTP request");
+  }
+ http1.end();
+
+
+  if (message1 == "1"){
+    vooruit();
+    Serial.println("voor");
+  }
+  else if (message1 == "2"){
+    achteruit();
+    Serial.println("achter");
+  }
+  else if (message1 == "4"){
+    rechts();
+    Serial.println("rechts");
+  }
+  else if (message1 == "8"){
+    links();
+    Serial.println("links");
+  }
+  else{
+    digitalWrite(motorpinLeft1,LOW);
+    digitalWrite(motorpinLeft2,LOW);
+    digitalWrite(motorpinRight1,LOW);
+    digitalWrite(motorpinRight2,LOW);
+  }
+   break;
+  }
+  case normaal:
+    con = 0;
+  //reed
+    reed_status = digitalRead(reed_switch);
+    if (reed_status == 1){
+    Serial.println("0");
+    }else{
+    Serial.println("1");
+    delay(1000);
+    }
+
+    // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  
+  // Calculate the distance
+  distanceCm = duration * SOUND_SPEED/2;
+  
+  digitalWrite(trigPinRechts, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPinRechts, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinRechts, LOW);
+
+  duration1 = pulseIn(echoPinRechts, HIGH);
+  
+  // Calculate the distance
+  distanceCm2 = duration2 * SOUND_SPEED/2;
+
+  digitalWrite(trigPinBeneden, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPinBeneden, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinBeneden, LOW);
+
+  duration2 = pulseIn(echoPinbeneden, HIGH);
+  
+  // Calculate the distance
+  distanceCm2 = duration2 * SOUND_SPEED/2;
+  
+
+  
+  if (digitalRead(15)== LOW){
+      rechts();
+  }
+  else if (digitalRead(2)== LOW){
+      links();
+  }
+  else if (distanceCm < 56){
+    achteruit();
+  }
+  else if (distanceCm1 > 56){
+    achteruit();
+  }
+  else if (distanceCm2 > 10)
+  {
+    achteruit();
+  }
+  
+  else{
+      vooruit();
+    }
+ }
+}
