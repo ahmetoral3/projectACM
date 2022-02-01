@@ -13,8 +13,8 @@ int mapY = 0;
 
 String message;
   
-const char* ssid = "Ziggo0957612";
-const char* password =  "Ailecek03@-nl";
+const char* ssid = "Tesla Iot";
+const char* password =  "fsL6HgjN";
   
 AsyncWebServer server(80);
   
