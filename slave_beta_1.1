@@ -3,8 +3,9 @@
 #define normaal 1
 #define wifi 0
  
+
 const char* ssid = "Tesla Iot";
-const char* password =  "fsL6HgjN"";
+const char* password =  "fsL6HgjN";
 String message;
 String message1;
 int staat;
@@ -55,6 +56,7 @@ void setup() {
  
   WiFi.begin(ssid, password);
  
+ // connects to the internet
   while (WiFi.status() != WL_CONNECTED) {
     message1 = "0";
     delay(1000);
@@ -80,31 +82,33 @@ void setup() {
     
     
     //ir-sensor
-    pinMode(irLinks,INPUT);
-    pinMode(irRechts,INPUT);
+    pinMode(irLinks,INPUT);// Sets the irlinks pin as an input
+    pinMode(irRechts,INPUT);// sets the irRechts pin as an input
     WiFi.begin(ssid, password);
 }
 
+  // motor code
   void vooruit(){
     digitalWrite(motorpinLeft1,HIGH);
     digitalWrite(motorpinLeft2,LOW);
     digitalWrite(motorpinRight1,LOW);
     digitalWrite(motorpinRight2,HIGH);
   }
+  //motor code
   void achteruit(){
     digitalWrite(motorpinLeft1,LOW);
     digitalWrite(motorpinLeft2,HIGH);
     digitalWrite(motorpinRight1,HIGH);
     digitalWrite(motorpinRight2,LOW);
   }
-
+  //motor code
   void links(){
     digitalWrite(motorpinLeft1,LOW);
     digitalWrite(motorpinLeft2,HIGH);
     digitalWrite(motorpinRight1,LOW);
     digitalWrite(motorpinRight2,HIGH);
   }
-
+  // motor code
   void rechts(){
     digitalWrite(motorpinLeft1,HIGH);
     digitalWrite(motorpinLeft2,LOW);
@@ -114,6 +118,7 @@ void setup() {
  
  
 void loop() {
+  // switches between wifi and normal mode
   if(digitalRead(switchButton) == HIGH){
     staat = wifi;
   }
@@ -124,6 +129,7 @@ void loop() {
 switch(staat){ 
   
   case wifi:{
+  // checks if there is a connection
   while (con == 0){
 
   http.begin("http://192.168.178.214/test");
@@ -142,11 +148,13 @@ switch(staat){
   else {
     Serial.println("Error on HTTP request");
   }
+  // Sets con to 1 so we know we have a connection
   con = 1;
  http.end();
   }
   HTTPClient http1;
 
+  // asks if any button is pressed to the server
   http1.begin("http://192.168.178.214/motor");
   int httpCode1 = http1.GET();
  
@@ -163,23 +171,27 @@ switch(staat){
   }
  http1.end();
 
-
+// if received message is 1 ACM goes forward
   if (message1 == "1"){
     vooruit();
     Serial.println("voor");
   }
+  // if received message is 2 ACM goes backwards
   else if (message1 == "2"){
     achteruit();
     Serial.println("achter");
   }
+  // if received message is 4 ACM goes right
   else if (message1 == "4"){
     rechts();
     Serial.println("rechts");
   }
+  // if received message is 8 ACM goes left
   else if (message1 == "8"){
     links();
     Serial.println("links");
   }
+  // if message is anything else ACM does nothing
   else{
     digitalWrite(motorpinLeft1,LOW);
     digitalWrite(motorpinLeft2,LOW);
@@ -189,8 +201,9 @@ switch(staat){
    break;
   }
   case normaal:
+  // Sets con to 0 so we know we do not have a connection
     con = 0;
-  //reed
+  //reads the status
     reed_status = digitalRead(reed_switch);
     reed_status = digitalRead(reed1);
     reed_status = digitalRead(reed2);
@@ -199,7 +212,6 @@ switch(staat){
     Serial.println("0");
     }else{
     Serial.println("1");
-    delay(1000);
     }
 
     // Clears the trigPin
@@ -241,26 +253,30 @@ switch(staat){
   distanceCm2 = duration2 * SOUND_SPEED/2;
   
 
-  
-  if (digitalRead(15)== LOW){
+  // If leftsensor is recognized go right
+  if (digitalRead(irLinks)== LOW){
       rechts();
   }
-  else if (digitalRead(2)== LOW){
+  // If rightsensor is recognized go left
+  else if (digitalRead(irRechts)== LOW){
       links();
   }
+  // if left ultrason detects something go right
   else if (distanceCm < 56){
     achteruit();
     rechts();
   }
+  // if right ulstrason detects something go left
   else if (distanceCm1 > 56){
     achteruit();
     links();
   }
+  //if bottom ultrason detects something go back
   else if (distanceCm2 > 10)
   {
     achteruit();
   }
-  
+  // else go forward
   else{
       vooruit();
     }
