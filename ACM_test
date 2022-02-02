@@ -1,0 +1,170 @@
+int reed_switch = 21;
+int reed1 = 18;
+int reed2 = 19;
+int reed3 = 13;
+int reed_status;
+
+const int trigPin = 22;
+const int echoPin = 23;
+
+const int trigPinRechts = 16;
+const int echoPinRechts = 17;
+
+const int trigPinBeneden = 14;
+const int echoPinbeneden = 12;
+
+#define sound speed in cm/uS
+#define SOUND_SPEED 0.034
+
+long duration;
+long duration1;
+long duration2;
+float distanceCm;
+float distanceCm1;
+float distanceCm2;
+
+int irLinks = 15;
+int irRechts = 4 ;
+
+
+const int motorpinLeft1 =25;
+const int motorpinLeft2 =26;
+const int motorpinRight1 =32;
+const int motorpinRight2 =33;
+const int ledVerbinding = 2;
+const int switchButton = 5;
+
+ 
+void setup() {
+ 
+  Serial.begin(9600);
+  pinMode(motorpinLeft1,OUTPUT);// Sets the motorpinleft1 as an output
+  pinMode(motorpinLeft2,OUTPUT);// Sets the motorpinleft2 as an output
+  pinMode(motorpinRight1,OUTPUT);// Sets the motorpinright1 as an output
+  pinMode(motorpinRight2,OUTPUT);// Sets the motorpinright2 as an output
+  pinMode(ledVerbinding, OUTPUT);// Sets led pin as an output
+  pinMode(switchButton, INPUT);// Sets the switch button as an output
+  //reed
+    pinMode(reed_switch, INPUT);
+    //ultrasoon
+    pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output
+    pinMode(echoPin, INPUT); // Sets the echoPin as an Input
+    pinMode(trigPinRechts, OUTPUT);// Sets the trigPinRechts as an Output
+    pinMode(echoPinRechts,INPUT);// Sets the echoPinbeneden as an Input
+    pinMode(trigPinBeneden,OUTPUT);// Sets the trigPinBeneden as an Output
+    pinMode(echoPinbeneden,INPUT);// Sets the echoPinbeneden as an Input
+    
+    
+    //ir-sensor
+    pinMode(irLinks,INPUT);// Sets the irlinks pin as an input
+    pinMode(irRechts,INPUT);// sets the irRechts pin as an input
+    }
+     // motor code
+  void vooruit(){
+    digitalWrite(motorpinLeft1,HIGH);
+    digitalWrite(motorpinLeft2,LOW);
+    digitalWrite(motorpinRight1,LOW);
+    digitalWrite(motorpinRight2,HIGH);
+  }
+  //motor code
+  void achteruit(){
+    digitalWrite(motorpinLeft1,LOW);
+    digitalWrite(motorpinLeft2,HIGH);
+    digitalWrite(motorpinRight1,HIGH);
+    digitalWrite(motorpinRight2,LOW);
+  }
+  //motor code
+  void links(){
+    digitalWrite(motorpinLeft1,LOW);
+    digitalWrite(motorpinLeft2,HIGH);
+    digitalWrite(motorpinRight1,LOW);
+    digitalWrite(motorpinRight2,HIGH);
+  }
+  // motor code
+  void rechts(){
+    digitalWrite(motorpinLeft1,HIGH);
+    digitalWrite(motorpinLeft2,LOW);
+    digitalWrite(motorpinRight1,HIGH);
+    digitalWrite(motorpinRight2,LOW);
+  }
+  
+  void loop() {
+   //reads the status
+    reed_status = digitalRead(reed_switch);
+    reed_status = digitalRead(reed1);
+    reed_status = digitalRead(reed2);
+    reed_status = digitalRead(reed3);
+    if (reed_status == 1){
+    Serial.println("0");
+    }else{
+    Serial.println("1");
+    }
+
+    // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  
+  // Calculate the distance
+  distanceCm = duration * SOUND_SPEED/2;
+  
+  digitalWrite(trigPinRechts, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPinRechts, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinRechts, LOW);
+
+  duration1 = pulseIn(echoPinRechts, HIGH);
+  
+  // Calculate the distance
+  distanceCm2 = duration2 * SOUND_SPEED/2;
+
+  digitalWrite(trigPinBeneden, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPinBeneden, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPinBeneden, LOW);
+
+  duration2 = pulseIn(echoPinbeneden, HIGH);
+  
+  // Calculate the distance
+  distanceCm2 = duration2 * SOUND_SPEED/2;
+  
+
+  // If leftsensor is recognized go right
+  if (digitalRead(irLinks)== LOW){
+      rechts();
+  }
+  // If rightsensor is recognized go left
+  else if (digitalRead(irRechts)== LOW){
+      links();
+  }
+  // if left ultrason detects something go right
+  else if (distanceCm < 56){
+    achteruit();
+    rechts();
+  }
+  // if right ulstrason detects something go left
+  else if (distanceCm1 > 56){
+    achteruit();
+    links();
+  }
+  //if bottom ultrason detects something go back
+  else if (distanceCm2 > 10)
+  {
+    achteruit();
+  }
+  // else go forward
+  else{
+      vooruit();
+    }
+ }
+}
